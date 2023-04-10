@@ -7,11 +7,11 @@
 
 // // $canvas.width(windowWidth) //sets canvas width to window width
 // // $canvas.height(windowHeight) //sets canvas height to window height
-
+const scoreEl = document.querySelector('#scoreElement')
 const canvas = document.querySelector('canvas')
 const c = canvas.getContext('2d')
-canvas.width = window.innerWidth
-canvas.height = window.innerHeight
+canvas.width = 1024
+canvas.height = 768
 console.log(canvas)
 
 class Player { //creates a class for the player
@@ -22,6 +22,7 @@ class Player { //creates a class for the player
             y : 0
         }
         this.rotation = 0
+        this.opacity = 1
         const image = new Image()
         image.src = './img/spaceship.png'
         image.onload = () => {
@@ -38,6 +39,7 @@ class Player { //creates a class for the player
         
     draw() {
         c.save()
+        c.globalAlpha = this.opacity
         c.translate(player.position.x + player.width/2, player. position.y + player.height/2)
         c.rotate(this.rotation)
         c.translate(-player.position.x - player.width/2, - player. position.y - player.height/2)
@@ -186,7 +188,7 @@ class InvaderProjectile {
     this.height = 10
   }
   draw () { 
-  c.fillStyle="white"
+  c.fillStyle="red"
   c.fillRect(this.position.x,this.position.y,this.width,this.height)
   }
 
@@ -199,12 +201,13 @@ class InvaderProjectile {
 }
 
 class Particle {
-  constructor({position, movement, radius, color}) {
+  constructor({position, movement, radius, color, fades}) {
     this.position = position
     this.movement = movement
     this.radius = radius
     this.color = color
     this.opacity = 1
+    this.fades = fades
   }
   draw () { 
     c.save()
@@ -222,7 +225,9 @@ class Particle {
     this.position.x += this.movement.x 
     this.position.y += this.movement.y 
 
+    if(this.fades) {
     this.opacity -= 0.01
+    }
 
   }
 }
@@ -251,8 +256,29 @@ const keys = {
 
 let frames = 0
 let randomInterval = Math.floor(Math.random() * 500 + 500)
+let game = {
+  over: false,
+  active: true
+}
 
-let createParticles = ({object, color}) => {
+for (let i =0; i < 100; i++) {
+  particles.push(
+    new Particle({
+    position: {
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height
+    }, 
+    movement : {
+      x: 0, 
+      y: 0.5
+    },
+    radius: Math.random() * 3,
+    color : "white"
+  }))
+}
+
+// creates particles in the background
+let createParticles = ({object, color, fades}) => {
   for (let i =0; i < 15; i++) {
     particles.push(
       new Particle({
@@ -265,17 +291,25 @@ let createParticles = ({object, color}) => {
         y: (Math.random() - 0.5)*2
       },
       radius: Math.random() * 3,
-      color : color || "red"
+      color : color || "red",
+      fades : true
     }))
   }
 }
 
+let score = 0
+
 function animate() {
+  if(!game.active) return
     requestAnimationFrame(animate)
     c.fillStyle = "black"
     c.fillRect(0, 0, canvas.width, canvas.height)
     player.update()
     particles.forEach ((particle,i) => {
+      if(particle.position.y - particle.radius >= canvas.height) {
+        particle.position.x = Math.random() * canvas.width
+        particle.position.y = - particle.radius
+      }
       if (particle.opacity <= 0) {
         setTimeout(()=> {
           particles.splice(i,1)
@@ -289,17 +323,31 @@ function animate() {
         setTimeout(()=> {
           invaderProjectiles.splice(index,1)
 
+
+
         }, 0)
-          
+
+   
       } else 
       invaderProjectile.update()
 
-      if (invaderProjectile.position.y + invaderProjectile.height >= player.position.y && invaderProjectile.position.x + invaderProjectile.width >= player.position.x && invaderProjectile.position.x <= player.position.x + player.width ) {
+      if (invaderProjectile.position.y + invaderProjectile.height >= player.position.y && invaderProjectile.position.x + invaderProjectile.width >= player.position.x && invaderProjectile.position.x <= player.position.x + player.width ) 
+      {
         console.log("you lose")
+        setTimeout(() => {
+          invaderProjectiles.splice(index,1)
+          player.opacity = 0,
+          game.over= true
+      }, 0)
         createParticles({
           object:player,
-          color: "grey"
+          color: "grey",
+          fades : true
         })
+        setTimeout(()=> {
+          game.active = false
+          }, 2000)
+            
 
       }
     })
@@ -335,11 +383,15 @@ function animate() {
               const projectileFound = projectiles.find(
                 (projectile2) => projectile2 === projectile
                 )
+                
               
 // removes invader and projectile
               if (invaderFound && projectileFound) {
+                score += 100
+                scoreEl.innerHTML = score
                 createParticles({
-                  object:invader
+                  object:invader,
+                  fades : true
                 })
               grid.invaders.splice(vadeindex,1)
               projectiles.splice(pindex,1)
@@ -384,6 +436,7 @@ function animate() {
 }
     
 window.addEventListener('keydown', ({key}) => {
+  if(game.over) return
     switch (key) { 
         case 'ArrowLeft' :
             keys.arrowLeft.isDown = true
