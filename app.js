@@ -248,7 +248,7 @@ class Particle { //class for the particles that spawn when player or invader is 
 	}
 }
 
-//Part 2: Defining classes, arrays and other general housekeeping 
+//Part 3:  arrays and other general housekeeping 
 
 let player = new Player(); //creates a new player
 
@@ -361,7 +361,7 @@ window.addEventListener("keyup", ({ key }) => {
 	}
 });
 
-//Part 3: Animate Loop 
+//Part 4: Animate Loop 
 function animate() {
 	if (!game.active) return; // ends the animation loop if game.active is false 
 	requestAnimationFrame(animate); //canvas method that requests the next frame to call the animate function on 
@@ -526,7 +526,7 @@ function animate() {
 animate();
 
 
-//Part 4: Restart Function 
+//Part 5: Restart Function 
 function restart() {
   // Resets all  game variables
   if (game.active == false && game.over == true) {
