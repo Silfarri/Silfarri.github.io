@@ -248,7 +248,7 @@ class Particle { //class for the particles that spawn when player or invader is 
 	}
 }
 
-//Part 3:  arrays and other general housekeeping 
+//Part 3:  Arrays and other general housekeeping 
 
 let player = new Player(); //creates a new player
 
