@@ -1,4 +1,4 @@
-# silfarri.github.io
+# https://shahirsiraj.github.io/Space-Invaders/
 
 Space Invaders! 
 --
